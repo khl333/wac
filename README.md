@@ -1,435 +1,131 @@
-# wac
-WAC (Warm Audio Codec)** is a fully custom, proprietary lossy audio codec developed from scratch in C++ and Java. It is designed to compress audio files (MP3, AAC, FLAC, WAV) into a compact `.wac` binary format with a predictable file size and a distinctive sound profile tuned for clarity and punch
+# WAC — Warm Audio Codec
 
-# AI genarted  
-WAC (Warm Audio Codec) — Full Technical Whitepaper
-### Version 9.1 | February 2026
-### Author: Khaled | Developed with Antigravity AI
+> A fully custom, proprietary lossy audio codec built from scratch in C++ and Java.  
+> No external audio libraries. No dependencies. Pure Windows API + Java Swing.
 
----
-
-## Table of Contents
-1. [Overview](#overview)
-2. [Motivation & Goals](#motivation--goals)
-3. [Architecture Overview](#architecture-overview)
-4. [The WAC File Format](#the-wac-file-format)
-5. [Compression Engine — IMA ADPCM](#compression-engine--ima-adpcm)
-6. [DSP Engine — Transient Designer](#dsp-engine--transient-designer)
-7. [Transcoder Application](#transcoder-application)
-8. [WarmStudio GUI Application](#warmstudio-gui-application)
-9. [Player Application](#player-application)
-10. [Copyright & Licensing](#copyright--licensing)
-11. [Technical Specifications](#technical-specifications)
-12. [Development History](#development-history)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/Platform-Windows-informational)
+![Language](https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Java-orange)
+![Version](https://img.shields.io/badge/WAC-v9.1-brightgreen)
 
 ---
 
-## 1. Overview
+## Overview
 
-**WAC (Warm Audio Codec)** is a fully custom, proprietary lossy audio codec developed from scratch in C++ and Java. It is designed to compress audio files (MP3, AAC, FLAC, WAV) into a compact `.wac` binary format with a predictable file size and a distinctive sound profile tuned for clarity and punch.
+**WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **SPL-Style Transient Designer** DSP for maximum punch and clarity.
 
-The complete application suite consists of:
-- **`WarmCodec.h`** — The core codec engine (encoder + decoder), written in C++
-- **`Transcoder.exe`** — A Windows CLI application that converts any audio format to `.wac`
-- **`WarmStudio.exe`** — A professional Java Swing GUI for transcoding and playback
-- **`Player.exe`** — A lightweight command-line WAC file player
-
-All components are built **without any external audio libraries**. The only dependencies are:
-- Microsoft Windows Media Foundation API (built into Windows 7+)
-- Java Swing standard library (built into JDK)
-- Windows `winmm.dll` `waveOut` API for audio playback
-
----
-
-## 2. Motivation & Goals
-
-The project was started with a clear set of design objectives:
-
-| Goal | Description |
-|------|-------------|
-| **Custom Format** | Create a proprietary `.wac` binary format with a unique magic header |
-| **No External Libraries** | Build the entire stack from scratch using only OS-native APIs |
-| **Predictable Compression** | Achieve a fixed ~4:1 compression ratio (compared to raw PCM) |
-| **Fixed Bitrate** | Target a constant 176.4 kbps (displayed as ~172 kbps) at 44.1 kHz stereo |
-| **FLAC Transparency** | Sound as close as possible to lossless FLAC during playback |
-| **Studio Punch** | Preserve or enhance the dynamic transient punch of the original recording |
-| **Professional GUI** | Build a DAW-style application for transcoding and playback |
+| Property | Value |
+|---|---|
+| Format | `.wac` (magic: `WARM`) |
+| Compression | 4-bit IMA ADPCM → **4:1 ratio** |
+| Sample Rate | 44,100 Hz (fixed) |
+| Bitrate | ~172 kbps CBR |
+| Channels | Stereo / Mono |
+| DSP | Transient Designer (SPL-style envelope punch) |
+| Input Formats | MP3, AAC, FLAC, WAV, WMA (via Windows MF) |
 
 ---
 
-## 3. Architecture Overview
+## Application Suite
 
+### `WarmStudio.exe` — Studio GUI
+A professional dark-themed audio workstation with:
+- 48-bar animated **Spectrum Analyzer** with peak-hold dots and frequency gradients
+- Dual **VU Meters** (Left / Right channels)
+- **Media Deck** playlist with double-click playback
+- **Seek Slider** with gradient track and custom thumb
+- Real-time **Transcoding Progress** monitoring
+- Transport controls: Previous / Play / Pause / Stop / Next
+
+### `Transcoder.exe` — CLI Converter
+Converts any Windows-supported audio format to `.wac`:
 ```
-┌────────────────────────────────────────────────────────────┐
-│                   WarmStudio.exe (Java GUI)                 │
-│   ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│   │  Media Deck │  │  Transport   │  │  Transcoding     │  │
-│   │  (Playlist) │  │  Controls    │  │  Progress Bar    │  │
-│   └─────────────┘  └──────────────┘  └──────────────────┘  │
-│              Calls Transcoder.exe (subprocess)              │
-└────────────────────────────────────────────────────────────┘
-            │                              │
-            ▼                              ▼
-┌─────────────────────┐        ┌───────────────────────┐
-│   Transcoder.exe    │        │       Player.exe       │
-│   (C++ CLI)         │        │       (C++ CLI)        │
-│                     │        │                        │
-│  Windows MF API     │        │  Windows waveOut API   │
-│  DecodeAudioFile()  │        │  Streams PCM to        │
-│  → PCM buffer       │        │  hardware directly     │
-└─────────────────────┘        └───────────────────────┘
-            │
-            ▼
-┌─────────────────────────────────────────────────────┐
-│                    WarmCodec.h                       │
-│                                                      │
-│  ┌──────────────┐         ┌──────────────────────┐  │
-│  │  DSP Engine  │ ──────> │   ADPCM Encoder      │  │
-│  │  (Transient  │         │   (4-bit packing,    │  │
-│  │   Designer)  │         │    STEP_TABLE)       │  │
-│  └──────────────┘         └──────────────────────┘  │
-│                                      │               │
-│                            ┌─────────▼──────────┐   │
-│                            │   .wac Binary File  │   │
-│                            │   [WARM HEADER]     │   │
-│                            │   [ADPCM BLOCKS]    │   │
-│                            └─────────────────────┘   │
-└─────────────────────────────────────────────────────┘
+Transcoder.exe <input.flac> <output.wac>
 ```
+Outputs `PROGRESS: nn` lines for GUI integration.
 
----
-
-## 4. The WAC File Format
-
-Every `.wac` file begins with a fixed **16-byte binary header** followed immediately by a sequence of ADPCM-encoded audio blocks.
-
-### 4.1 Header Structure (16 bytes)
-
-| Offset | Size | Type | Field | Value |
-|--------|------|------|-------|-------|
-| 0 | 4 bytes | char[4] | Magic Bytes | `W`, `A`, `R`, `M` |
-| 4 | 4 bytes | uint32_t | Sample Rate | e.g., `44100` |
-| 8 | 2 bytes | uint16_t | Channels | `1` (Mono) or `2` (Stereo) |
-| 10 | 4 bytes | uint32_t | Total Blocks | Number of ADPCM blocks |
-| 14 | 2 bytes | — | (Struct padding) | — |
-
-The **magic identifier** `WARM` allows any decoder to quickly validate a WAC file and reject invalid inputs before attempting to decode them.
-
-### 4.2 Block Structure
-
-After the header, the file consists of sequential ADPCM blocks. Each block is exactly **128 samples** wide per channel.
-
-For a stereo file, each block contains:
-- **Channel 0 Block Header** (4 bytes): Initial predictor value + step index
-- **Channel 1 Block Header** (4 bytes): Initial predictor value + step index
-- **Channel 0 Data** (64 bytes): 128 samples packed at 4 bits per sample
-- **Channel 1 Data** (64 bytes): 128 samples packed at 4 bits per sample
-
-**Total block size (stereo):** `4 + 4 + 64 + 64 = 136 bytes`
-
-This produces a fixed, perfectly calculable file size:
-```
-file_size = 16 + (total_blocks × 136)
-```
-
----
-
-## 5. Compression Engine — IMA ADPCM
-
-### 5.1 What is ADPCM?
-
-**ADPCM (Adaptive Differential Pulse-Code Modulation)** is a lossy audio compression technique. Instead of storing the absolute value of each audio sample (which requires 16 bits per sample in standard PCM), ADPCM stores only the **difference** between the current sample and a mathematical prediction of what the next sample should be. This difference is very small compared to the absolute value, and can be stored in just **4 bits per sample** instead of 16.
-
-This achieves a direct **4:1 compression ratio** with no further tricks needed:
-```
-16 bits (PCM) ÷ 4 bits (ADPCM) = 4:1 compression ratio
-```
-
-### 5.2 The Adaptive Step Table
-
-The critical innovation of IMA-ADPCM is that the quantization step size **adapts dynamically** to the content:
-
-- When the audio is **loud and fast-moving** (drums, transients), the step size automatically grows larger so it can track fast changes
-- When the audio is **quiet or sustained** (a held piano note), the step size shrinks to capture fine detail with low distortion
-
-This is governed by the **89-entry Step Table**:
-```cpp
-const int16_t STEP_TABLE[89] = {
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, ... , 32767
-};
-```
-These are the standardized IMA step values (public domain, IMA Digital Audio Focus Group, 1992).
-
-The **Index Table** governs how fast the step size adapts:
-```cpp
-const int8_t INDEX_TABLE[16] = {
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8
-};
-```
-- Small nibble values (0–3) → step size decreases (quiet signal)
-- Large nibble values (4–7) → step size increases rapidly (loud signal)
-
-### 5.3 Encoding Loop (per sample)
-
-For each audio sample, the encoder:
-1. Calculates the **difference**: `diff = target_sample - predictor`
-2. Determines the **sign bit** (positive or negative difference)
-3. Quantizes the difference into a **3-bit magnitude** (nibble bits 0–2) using the current step
-4. Reconstructs the **predictor** to stay in sync with the decoder
-5. Updates the **step index** based on the nibble value
-6. Packs two nibbles into **one byte** (4 bits each)
-
-```
-Byte = [4-bit nibble A][4-bit nibble B]
-```
-
-### 5.4 Decoding Loop (per nibble)
-
-The decoder exactly mirrors the encoder:
-1. Extracts the sign bit and magnitude bits from each nibble
-2. Reconstructs `vpdiff` from the current step and nibble bits
-3. Applies sign: `predictor += vpdiff` (or `-=` if sign bit is set)
-4. Clamps predictor to the valid int16 range: `[-32768, 32767]`
-5. Updates the step index identically to the encoder
-
-Because both encoder and decoder use identical state update logic, they stay **perfectly synchronized** sample by sample, ensuring clean, distortion-free decoding.
-
----
-
-## 6. DSP Engine — Transient Designer
-
-### 6.1 Purpose
-
-The DSP (Digital Signal Processing) pipeline runs **before** the ADPCM encoding step. Its purpose is to shape the audio signal to sound as close to the original FLAC recording as possible, while compensating for the mild quantization loss introduced by 4-bit compression.
-
-The key perceptual quality to preserve is **transient punch** — the sharp attack spike of drums, guitar plucks, and vocals that makes music feel physical and alive.
-
-### 6.2 Algorithm: SPL-Style Transient Envelope Detector
-
-The WAC DSP uses a technique modeled after professional hardware **Transient Designers** (originally patented by SPL, Germany). Our implementation derives the same effect mathematically from first principles.
-
-**Step 1 — Derivative (Rate of Change)**
-```cpp
-float transient = x - transientState;
-transientState = x;
-```
-By subtracting the previous sample from the current sample, we calculate the **instantaneous rate of change** of the waveform. This value is large when a drum hits (rapid change) and near zero during sustained sounds.
-
-**Step 2 — Peak Follower (Fast Attack)**
-```cpp
-peakFollower = 0.2f * absTrans + 0.8f * peakFollower;
-```
-This is a **one-pole IIR lowpass filter** with a fast time constant (0.2 attack coefficient). It tracks the short-term peak energy of transients very quickly.
-
-**Step 3 — Envelope Follower (Slow Release)**
-```cpp
-envFollower = 0.02f * absTrans + 0.98f * envFollower;
-```
-Same filter structure but with a much slower release (0.02 attack coefficient). This follows the long-term average energy of the signal.
-
-**Step 4 — Punch Extraction**
-```cpp
-float punch = peakFollower - envFollower;
-if (punch < 0.0f) punch = 0.0f;
-```
-The difference between the fast peak and the slow envelope **is the transient**. During drum hits, this value spikes very high. During sustained sounds, it's nearly zero. This is a clean, mathematical extraction of transient energy.
-
-**Step 5 — Punch Application**
-```cpp
-float s = x + (transient * punch * 4.0f);
-```
-The extracted punch is applied back to the signal proportionally. The `4.0f` multiplier controls the strength. This adds energy precisely at drum attack moments without touching the rest of the waveform.
-
-**Step 6 — Transparent Limiter**
-```cpp
-if (s > 0.98f) s = 0.98f;
-else if (s < -0.98f) s = -0.98f;
-```
-A hard ceiling at 98% of maximum digital level prevents the boosted transients from clipping during ADPCM quantization. This is a perfectly transparent limit — it only activates during the loudest peaks.
-
----
-
-## 7. Transcoder Application
-
-`Transcoder.exe` is a command-line Windows application that:
-1. Accepts any audio file supported by Windows (MP3, AAC, FLAC, WAV, WMA, etc.)
-2. Decodes it to uncompressed 44.1kHz 16-bit stereo PCM using the **Windows Media Foundation API**
-3. Passes the raw PCM through the **WAC DSP engine**
-4. Encodes the filtered PCM using the **ADPCM encoder**
-5. Writes the output `.wac` binary file
-6. Prints real-time `PROGRESS: nn` lines to stdout (read by WarmStudio GUI)
-
-### Command Line Usage:
-```
-Transcoder.exe <input_file> <output.wac>
-```
-
-### Decoding Technology:
-The transcoder uses Microsoft's **Media Foundation** COM API:
-- `MFCreateSourceReaderFromURL()` — opens any supported format transparently
-- `SetCurrentMediaType()` — forces raw PCM output regardless of input format
-- `ReadSample()` — reads decoded PCM buffers in a loop
-
-This means the transcoder can handle any format Windows supports natively — including FLAC, MP3, AAC, and WAV — **without a single external library**.
-
----
-
-## 8. WarmStudio GUI Application
-
-`WarmStudio.exe` is a professional-grade Java Swing application compiled to a native Windows executable via a C++ launcher (`Launcher.cpp`).
-
-### Features:
-- **Media Deck**: Drag-and-drop playlist for batch transcoding
-- **Transport Controls**: Play, Pause, Resume, Stop buttons for WAC playback
-- **Real-time Seek Slider**: Scrub through any position in a playing WAC file
-- **Volume Control**: Live master volume slider
-- **Animated Equalizer Visualizer**: Dynamic bar animation synchronized to playback
-- **Transcoding Progress Bar**: Real-time progress monitoring from Transcoder.exe subprocess
-- **Professional Dark Theme**: Custom rendered UI with gradients and smooth animations
-
-### WAC Decoding Engine (Java):
-The Java GUI contains a fully self-contained ADPCM decoder (`decodeWac()` method) that:
-1. Reads the WARM header to retrieve sample rate, channels, and block count
-2. Iterates through every ADPCM block
-3. Decodes each nibble using the identical Step Table and Index Table as the C++ codec
-4. Feeds the decoded PCM samples directly to the Java `SourceDataLine` audio output
-
-This allows **real-time playback with seeking** without process-spawning the Player.exe.
-
----
-
-## 9. Player Application
-
-`Player.exe` is a minimal C++ command-line player for `.wac` files.
-
-- Reads the entire `.wac` file into memory
-- Calls `WarmCodec::Decode()` to decompress to PCM
-- Opens a Windows `waveOut` device at the correct sample rate and channel count
-- Streams the PCM buffer to the audio hardware in chunks
-- Waits for playback to complete before exiting
-
-### Usage:
+### `Player.exe` — Lightweight CLI Player
+Simple command-line WAC file player:
 ```
 Player.exe <input.wac>
 ```
 
 ---
 
-## 10. Copyright & Licensing
+## Project Structure
 
-### Original Code:
-Every line of logic in this project was written from scratch:
-- The WAC file format and `WARM` magic header are original inventions
-- The DSP transient designer algorithm is an original implementation
-- The encoder/decoder loop structure, block format, and channel interleaving are original designs
-- The WarmStudio GUI layout, theming, and all UI components are original
-
-### IMA ADPCM Constants:
-The `STEP_TABLE[89]` and `INDEX_TABLE[16]` numerical values originate from the **IMA ADPCM standard** (Interactive Multimedia Association, 1992). This specification is publicly available and these constants appear throughout public domain and open-source audio codecs (including Microsoft's official WAV ADPCM format). No source code was copied — only the standardized mathematical constant arrays were used, which is equivalent to referencing a published formula.
-
-**Recommended attribution comment for `WarmCodec.h`:**
-```cpp
-// IMA ADPCM Step Table — Public domain standard values
-// Source: IMA Digital Audio Focus & Technical Working Group, 1992
+```
+InternetRadio/
+├── WarmCodec.h          # Core codec engine (Encoder + Decoder + DSP)
+├── Transcoder.cpp       # CLI transcoder (Windows Media Foundation)
+├── Player.cpp           # CLI WAC player (Windows waveOut API)
+├── Launcher.cpp         # Native EXE launcher for the Java GUI
+├── WarmStudio.java      # Professional Java Swing studio GUI
+├── build.bat            # Build script (g++ + javac)
+├── WAC_CODEC_WHITEPAPER.md  # Full technical documentation
+├── LICENSE              # MIT License
+└── .gitignore
 ```
 
-### Windows API:
-Usage of Windows Media Foundation and `waveOut` is governed by **Microsoft's Windows SDK license**, which permits royalty-free use in commercial and personal applications.
+---
 
-### Java Standard Library:
-Java Swing is part of the **Oracle JDK**, freely available for use under the Oracle Binary Code License (BCL) or OpenJDK GPL v2 + Classpath Exception.
+## Building from Source
+
+### Requirements
+- **g++** (MinGW-w64, tested with GCC 12+)
+- **JDK 11+** (javac + java)
+- **Windows 7+** (Media Foundation API required)
+
+### Build
+```bat
+build.bat
+```
+Or manually:
+```bat
+g++ -O2 Transcoder.cpp -o Transcoder.exe -municode -lmfplat -lmfreadwrite -lmfuuid -lole32
+g++ -O2 Player.cpp     -o Player.exe     -municode -lwinmm
+g++ -O2 Launcher.cpp   -o WarmStudio.exe -mwindows
+javac WarmStudio.java
+```
 
 ---
 
-## 11. Technical Specifications
+## How It Works
 
-| Property | Value |
-|----------|-------|
-| Format Name | WAC (Warm Audio Codec) |
-| File Extension | `.wac` |
-| Magic Bytes | `W`, `A`, `R`, `M` (ASCII) |
-| Codec Type | Lossy (ADPCM-based) |
-| Bits Per Sample (Encoded) | 4 bits |
-| Bits Per Sample (Decoded) | 16 bits |
-| Compression Ratio | 4:1 (vs raw PCM) |
-| Sample Rate | 44,100 Hz (fixed) |
-| Channels | Stereo (2ch) |
-| Effective Bitrate | 176,400 bps (~172 kbps) |
-| Block Size | 128 samples per channel |
-| Block Header Size | 4 bytes per channel |
-| Header Size | 16 bytes |
-| ADPCM Standard | IMA/DVI ADPCM (4-bit) |
-| DSP Processing | SPL-Style Transient Designer |
-| Encoder Language | C++ (g++ MinGW) |
-| GUI Language | Java (Swing) |
-| Target Platform | Windows 7+ (64-bit) |
-| External Libraries | None |
+### Compression (4-bit IMA ADPCM)
+Instead of storing every audio sample (16 bits), WAC stores only the **difference** between consecutive samples using an adaptive step size. This achieves a clean 4:1 compression ratio with no psychoacoustic tricks.
+
+### DSP — Transient Designer
+Before encoding, a **transient envelope detector** runs on the raw PCM:
+1. Computes the instantaneous derivative of the waveform
+2. Tracks a fast-attack peak follower vs. a slow-release envelope follower
+3. Extracts the difference → **pure transient energy**
+4. Applies a `4.0x` punch multiplier precisely at drum and vocal attack moments
+5. Limits the result to 98% headroom for clean ADPCM encoding
+
+This gives the WAC output a live, punchy quality that closely matches the source FLAC.
 
 ---
 
-## 12. Development History
+## DSP Evolution
 
-| Version | Key Change |
-|---------|-----------|
-| v1–v3 | Initial prototype, basic ADPCM, fixed block size |
-| v4 | Introduced warmth DSP (bass shelf + soft saturation) |
-| v5 | Super Compression: 2x decimation + ADPCM for 8:1 ratio |
-| v6 | Ultimate Fidelity: removed decimation, added psychoacoustic noise shaping |
-| v7 | True Warmth: standard IMA ADPCM, custom warm DSP (EQ + tape compression) |
-| v8 | Crisp Profile: removed warmth, added transient exciter + high-pass air boost |
-| v8.1 | Fixed loud distortion: dynamic headroom-aware transient scaling |
-| v8.2 | Added 3D stereo depth (Mid-Side matrixing) + multiband detail |
-| v8.3 | Full spectrum detail: 3-band harmonic exciter (Lows, Mids, Highs) |
-| v8.4 | OTT-style upward parallel compression for micro-detail recovery |
-| v9 | FLAC Transparency: restored full 44.1kHz, removed decimation entirely |
-| **v9.1** | **Current: SPL Transient Designer — punch mapped to FLAC crest factor** |
+| Version | Profile |
+|---|---|
+| v1–v6 | Warmth, bass shelf, tape saturation |
+| v7 | True warmth ADPCM |
+| v8–v8.4 | Crispness, 3D stereo depth, multiband harmonics, OTT compression |
+| v9 | FLAC transparency (removed all coloration) |
+| **v9.1** | **Current: SPL Transient Designer — pristine punch** |
 
 ---
 
-*WAC Codec Suite — All rights reserved. Original work created February 2026.*
+## License
 
+MIT License — see [LICENSE](LICENSE)
 
-MIT License
+**Third-party notices:**  
+The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the public IMA ADPCM standard (1992) and are in the public domain.
 
-Copyright (c) 2026 Khaled
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-───────────────────────────────────────────────────────────────────
-THIRD-PARTY NOTICES
-───────────────────────────────────────────────────────────────────
-
-IMA ADPCM Step Table Constants
-  The STEP_TABLE[89] and INDEX_TABLE[16] numerical values used in
-  WarmCodec.h are derived from the public IMA ADPCM standard:
-  "IMA Digital Audio Focus & Technical Working Group"
-  Recommended Practices for Enhancing Digital Audio Compatibility
-  in Multimedia Systems, October 1992.
-  These constants are in the public domain and widely used in
-  open audio specifications including Microsoft WAVE ADPCM.
-
-Windows Media Foundation API
-  Used in Transcoder.cpp under the Microsoft Windows SDK license.
-  Royalty-free for use in commercial and personal applications.
-
-Java Standard Library (Swing / javax.sound.sampled)
-  Used in WarmStudio.java under the Oracle Binary Code License (BCL)
-  or OpenJDK GPL v2 + Classpath Exception.
-
+*Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
