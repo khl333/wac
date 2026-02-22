@@ -31,6 +31,7 @@ bool DecodeAudioFile(const wchar_t* filename, std::vector<int16_t>& pcmData, uin
     pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
     
     // We will decode anything into uncompressed PCM for our custom codec
+    // Full 44,100 Hz — FLAC transparency approach (WAC v10)
     pPartialType->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, 2);
     pPartialType->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, 44100);
     pPartialType->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);

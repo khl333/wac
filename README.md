@@ -12,9 +12,6 @@
 
 ---
 
-<img width="976" height="578" alt="Picture2" src="https://github.com/user-attachments/assets/4bd4eee6-db4f-4349-b67d-f95f7788d4cf" />
-
-
 ## Overview
 
 **WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **SPL-Style Transient Designer** DSP for maximum punch and clarity.
@@ -23,11 +20,12 @@
 |---|---|
 | Format | `.wac` (magic: `WARM`) |
 | Compression | 4-bit IMA ADPCM → **4:1 ratio** |
-| Sample Rate | 44,100 Hz (fixed) |
-| Bitrate | ~172 kbps CBR |
+| Sample Rate | 44,100 Hz |
+| Bitrate | ~375 kbps CBR |
 | Channels | Stereo / Mono |
 | DSP | Transient Designer (SPL-style envelope punch) |
 | Input Formats | MP3, AAC, FLAC, WAV, WMA (via Windows MF) |
+
 
 ---
 
@@ -48,6 +46,7 @@ Converts any Windows-supported audio format to `.wac`:
 Transcoder.exe <input.flac> <output.wac>
 ```
 Outputs `PROGRESS: nn` lines for GUI integration.
+
 
 ### `Player.exe` — Lightweight CLI Player
 Simple command-line WAC file player:
@@ -134,5 +133,3 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
-
-

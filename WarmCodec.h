@@ -10,7 +10,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// WAC v9 (FLAC Transparency & Master Studio Punch)
+// WAC v9.1 (FLAC Transparency & Master Studio Punch)
 struct WacHeader {
     char magic[4] = {'W','A','R','M'}; 
     uint32_t sampleRate;
@@ -20,6 +20,7 @@ struct WacHeader {
 
 const int BLOCK_SIZE = 128;
 
+// IMA ADPCM Step Table — public domain standard (IMA, 1992)
 const int16_t STEP_TABLE[89] = { 
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 
     50, 55, 60, 66, 73, 80, 88, 97, 107, 118, 130, 143, 157, 173, 190, 209, 230, 
@@ -67,11 +68,9 @@ public:
                 if (punch < 0.0f) punch = 0.0f;
                 
                 // 2. Headroom-based Transient Scaling
-                // Apply a massive 3.0x multiplier to the transient hits during loud dynamic moments
                 float s = x + (transient * punch * 4.0f); 
                 
                 // 3. Pristine Safe Limiter
-                // Limit to 98% to prevent hard clipping during ADPCM conversion
                 if (s > 0.98f) s = 0.98f;
                 else if (s < -0.98f) s = -0.98f;
                 
@@ -82,7 +81,6 @@ public:
         uint32_t totalBlocks = totalFrames / BLOCK_SIZE;
 
         WacHeader header;
-        // Native full frequency! No more halving the sample rate!
         header.sampleRate = sampleRate; 
         header.channels = channels;
         header.totalBlocks = totalBlocks;
@@ -167,7 +165,6 @@ public:
         size_t expectedSize = offset + header->totalBlocks * outChannels * (4 + BLOCK_SIZE / 2);
         if (wacData.size() < expectedSize) return pcm; 
         
-        // Output perfectly matches native playback speed and size
         pcm.resize(header->totalBlocks * BLOCK_SIZE * outChannels);
         
         for (uint32_t b = 0; b < header->totalBlocks; ++b) {

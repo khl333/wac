@@ -690,6 +690,7 @@ public class WarmStudio extends JFrame {
                 }
             }
         }
+
         AudioData d = new AudioData();
         d.pcm = pcm;
         d.sampleRate = sampleRate;
