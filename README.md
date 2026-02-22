@@ -12,7 +12,7 @@
 
 ---
 
-<img width="2174" height="1369" alt="javaw_TBcMyHLTOn" src="https://github.com/user-attachments/assets/4b009481-248b-4d21-bd37-96d850aa78f3" />
+<img width="976" height="578" alt="Picture2" src="https://github.com/user-attachments/assets/4bd4eee6-db4f-4349-b67d-f95f7788d4cf" />
 
 
 ## Overview
@@ -134,4 +134,5 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
 
