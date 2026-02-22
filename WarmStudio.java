@@ -6,8 +6,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
+
 import java.io.*;
 import java.nio.*;
 import java.nio.file.*;
@@ -28,10 +27,8 @@ public class WarmStudio extends JFrame {
     private static final Color ACCENT_PURPLE = new Color(140, 80, 255);
     private static final Color TEXT_PRIMARY = new Color(230, 235, 245);
     private static final Color TEXT_MUTED = new Color(110, 120, 145);
-    private static final Color TEXT_DIM = new Color(60, 68, 90);
     private static final Color BORDER_SUBTLE = new Color(35, 40, 58);
     private static final Font FONT_MAIN = new Font("Segoe UI", Font.PLAIN, 13);
-    private static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 13);
     private static final Font FONT_SMALL = new Font("Segoe UI", Font.PLAIN, 11);
     private static final Font FONT_MONO = new Font("JetBrains Mono", Font.BOLD, 14);
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 15);

@@ -7,6 +7,8 @@
 ![Platform](https://img.shields.io/badge/Platform-Windows-informational)
 ![Language](https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Java-orange)
 ![Version](https://img.shields.io/badge/WAC-v9.1-brightgreen)
+[![Arabic README](https://img.shields.io/badge/README-العربية-green)](README.ar.md)
+
 
 ---
 
