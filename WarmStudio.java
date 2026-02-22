@@ -88,7 +88,7 @@ public class WarmStudio extends JFrame {
         JLabel logo = new JLabel("◈ WAC STUDIO");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 17));
         logo.setForeground(ACCENT_BLUE);
-        JLabel version = new JLabel("v9.1 • Warm Audio Codec");
+        JLabel version = new JLabel("v13 • Cinematic 3D Spatial Audio");
         version.setFont(FONT_SMALL);
         version.setForeground(TEXT_MUTED);
         left.add(logo);
@@ -220,7 +220,7 @@ public class WarmStudio extends JFrame {
         lblTrackName.setFont(FONT_TITLE);
         lblTrackName.setForeground(TEXT_PRIMARY);
 
-        lblSampleRate = new JLabel("WAC v9.1  •  44100 Hz  •  Stereo  •  ~172 kbps");
+        lblSampleRate = new JLabel("WAC v13  •  44100 Hz  •  Stereo  •  ~375 kbps");
         lblSampleRate.setFont(FONT_SMALL);
         lblSampleRate.setForeground(TEXT_MUTED);
 
@@ -436,8 +436,8 @@ public class WarmStudio extends JFrame {
             try {
                 currentAudioData = decodeWac(f);
                 SwingUtilities.invokeLater(() -> {
-                    lblSampleRate.setText("WAC v9.1  •  " + currentAudioData.sampleRate + " Hz  •  "
-                            + (currentAudioData.channels == 2 ? "Stereo" : "Mono") + "  •  ~172 kbps");
+                    lblSampleRate.setText("WAC v13  •  " + currentAudioData.sampleRate + " Hz  •  "
+                            + (currentAudioData.channels == 2 ? "Stereo" : "Mono") + "  •  ~375 kbps");
                     updateStatus("Playing: " + f.getName());
                     btnPlayPause.setText("⏸  PAUSE");
                     spectrumPanel.setActive(true);

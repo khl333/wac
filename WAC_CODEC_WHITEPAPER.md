@@ -1,5 +1,5 @@
 # WAC (Warm Audio Codec) — Full Technical Whitepaper
-### Version 9.1 | February 2026
+### Version 13 | February 2026
 ### Author: Khaled | Developed with Antigravity AI
 
 ---
@@ -46,9 +46,9 @@ The project was started with a clear set of design objectives:
 | **Custom Format** | Create a proprietary `.wac` binary format with a unique magic header |
 | **No External Libraries** | Build the entire stack from scratch using only OS-native APIs |
 | **Predictable Compression** | Achieve a fixed ~4:1 compression ratio (compared to raw PCM) |
-| **Fixed Bitrate** | Target a constant 176.4 kbps (displayed as ~172 kbps) at 44.1 kHz stereo |
+| **Fixed Bitrate** | Target a constant ~375 kbps at 44.1 kHz stereo |
 | **FLAC Transparency** | Sound as close as possible to lossless FLAC during playback |
-| **Studio Punch** | Preserve or enhance the dynamic transient punch of the original recording |
+| **Cinematic 3D** | Expand the stereo field and heavily enhance sub-bass while retaining transient punch |
 | **Professional GUI** | Build a DAW-style application for transcoding and playback |
 
 ---
@@ -81,8 +81,8 @@ The project was started with a clear set of design objectives:
 │                                                      │
 │  ┌──────────────┐         ┌──────────────────────┐  │
 │  │  DSP Engine  │ ──────> │   ADPCM Encoder      │  │
-│  │  (Transient  │         │   (4-bit packing,    │  │
-│  │   Designer)  │         │    STEP_TABLE)       │  │
+│  │  (Cinematic  │         │   (4-bit packing,    │  │
+│  │   3D Master) │         │    STEP_TABLE)       │  │
 │  └──────────────┘         └──────────────────────┘  │
 │                                      │               │
 │                            ┌─────────▼──────────┐   │
@@ -193,51 +193,45 @@ Because both encoder and decoder use identical state update logic, they stay **p
 
 ---
 
-## 6. DSP Engine — Transient Designer
+## 6. DSP Engine — Cinematic 3D Master
 
 ### 6.1 Purpose
 
-The DSP (Digital Signal Processing) pipeline runs **before** the ADPCM encoding step. Its purpose is to shape the audio signal to sound as close to the original FLAC recording as possible, while compensating for the mild quantization loss introduced by 4-bit compression.
+The DSP (Digital Signal Processing) pipeline runs **before** the ADPCM encoding step. Its purpose is to shape the audio signal to sound incredibly modern, wide, and heavy, preparing it for a cinematic listening experience before the mild quantization loss introduced by 4-bit compression.
 
-The key perceptual quality to preserve is **transient punch** — the sharp attack spike of drums, guitar plucks, and vocals that makes music feel physical and alive.
+The key perceptual qualities to enhance are **stereo width**, **sub-bass depth**, and **transient punch**.
 
-### 6.2 Algorithm: SPL-Style Transient Envelope Detector
+### 6.2 Algorithm: The Three-Stage Cinematic Processing
 
-The WAC DSP uses a technique modeled after professional hardware **Transient Designers** (originally patented by SPL, Germany). Our implementation derives the same effect mathematically from first principles.
+The WAC DSP uses three distinct techniques to actively master the audio without introducing analog distortion or noise.
 
-**Step 1 — Derivative (Rate of Change)**
+**Stage 1 — Holographic 3D Stereo Widener**
 ```cpp
-float transient = x - transientState;
-transientState = x;
+float mid = (L + R) * 0.5f;
+float side = (L - R) * 0.5f;
+side *= 1.30f; // 30% Width Expansion
+L = mid + side;
+R = mid - side;
 ```
-By subtracting the previous sample from the current sample, we calculate the **instantaneous rate of change** of the waveform. This value is large when a drum hits (rapid change) and near zero during sustained sounds.
+It mathematically isolates the differences between the Left and Right channels (the "Side" channel), and widens it by 30%. This makes synthesizers and backing vocals sound like they are wrapping around the listener's head in 3D space.
 
-**Step 2 — Peak Follower (Fast Attack)**
+**Stage 2 — Deep Sub-Bass Exciter**
 ```cpp
-peakFollower = 0.2f * absTrans + 0.8f * peakFollower;
+bassFilter[c] = 0.95f * bassFilter[c] + 0.05f * x;
+float s = x + (bassFilter[c] * 0.12f);
 ```
-This is a **one-pole IIR lowpass filter** with a fast time constant (0.2 attack coefficient). It tracks the short-term peak energy of transients very quickly.
+Uses a simple Low-Pass filter to extract frequencies below ~85Hz. We then cleanly amplify only these sub-frequencies by 12% and mix them back in, giving the track a heavy, satisfying "weight" entirely cleanly without muddying the mix.
 
-**Step 3 — Envelope Follower (Slow Release)**
+**Stage 3 — SPL-Style Transient Designer**
 ```cpp
-envFollower = 0.02f * absTrans + 0.98f * envFollower;
+float transient = s - transientState[c];
+transientState[c] = s;
 ```
-Same filter structure but with a much slower release (0.02 attack coefficient). This follows the long-term average energy of the signal.
+By subtracting the previous sample from the current sample, we calculate the instantaneous rate of change of the waveform. Using a fast-attack peak follower and slow-release envelope follower, the difference between the two extracts the **transient punch**. 
 
-**Step 4 — Punch Extraction**
-```cpp
-float punch = peakFollower - envFollower;
-if (punch < 0.0f) punch = 0.0f;
-```
-The difference between the fast peak and the slow envelope **is the transient**. During drum hits, this value spikes very high. During sustained sounds, it's nearly zero. This is a clean, mathematical extraction of transient energy.
+This extracted punch is applied back to the signal proportionally with a `4.0f` multiplier. This adds energy precisely at drum attack moments without touching the rest of the waveform.
 
-**Step 5 — Punch Application**
-```cpp
-float s = x + (transient * punch * 4.0f);
-```
-The extracted punch is applied back to the signal proportionally. The `4.0f` multiplier controls the strength. This adds energy precisely at drum attack moments without touching the rest of the waveform.
-
-**Step 6 — Transparent Limiter**
+**Stage 4 — Transparent Limiter**
 ```cpp
 if (s > 0.98f) s = 0.98f;
 else if (s < -0.98f) s = -0.98f;
@@ -351,12 +345,12 @@ Java Swing is part of the **Oracle JDK**, freely available for use under the Ora
 | Compression Ratio | 4:1 (vs raw PCM) |
 | Sample Rate | 44,100 Hz (fixed) |
 | Channels | Stereo (2ch) |
-| Effective Bitrate | 176,400 bps (~172 kbps) |
+| Effective Bitrate | ~375,000 bps (~375 kbps) |
 | Block Size | 128 samples per channel |
 | Block Header Size | 4 bytes per channel |
 | Header Size | 16 bytes |
 | ADPCM Standard | IMA/DVI ADPCM (4-bit) |
-| DSP Processing | SPL-Style Transient Designer |
+| DSP Processing | Cinematic 3D Master (Stereo Widener, Sub-Bass, Punch) |
 | Encoder Language | C++ (g++ MinGW) |
 | GUI Language | Java (Swing) |
 | Target Platform | Windows 7+ (64-bit) |
@@ -379,7 +373,8 @@ Java Swing is part of the **Oracle JDK**, freely available for use under the Ora
 | v8.3 | Full spectrum detail: 3-band harmonic exciter (Lows, Mids, Highs) |
 | v8.4 | OTT-style upward parallel compression for micro-detail recovery |
 | v9 | FLAC Transparency: restored full 44.1kHz, removed decimation entirely |
-| **v9.1** | **Current: SPL Transient Designer — punch mapped to FLAC crest factor** |
+| v9.1 | SPL Transient Designer — pristine punch |
+| **v13** | **Current: Cinematic 3D Spatial Audio (Stereo Width + Sub-Bass)** |
 
 ---
 

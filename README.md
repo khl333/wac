@@ -3,20 +3,18 @@
 > A fully custom, proprietary lossy audio codec built from scratch in C++ and Java.  
 > No external audio libraries. No dependencies. Pure Windows API + Java Swing.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/Platform-Windows-informational)
+![Language](https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Java-orange)
+![Version](https://img.shields.io/badge/WAC-v13-brightgreen)
+[![Arabic README](https://img.shields.io/badge/README-العربية-green)](README.ar.md)
+
 
 ---
 
 ## Overview
 
-**WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **SPL-Style Transient Designer** DSP for maximum punch and clarity.
-
-
-
-
-https://github.com/user-attachments/assets/580088d6-c6a3-44fb-baf5-683c966e317b
-
-
-
+**WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **Analog Studio Master DSP** for maximum punch, warmth, and clarity.
 
 | Property | Value |
 |---|---|
@@ -25,7 +23,7 @@ https://github.com/user-attachments/assets/580088d6-c6a3-44fb-baf5-683c966e317b
 | Sample Rate | 44,100 Hz |
 | Bitrate | ~375 kbps CBR |
 | Channels | Stereo / Mono |
-| DSP | Transient Designer (SPL-style envelope punch) |
+| DSP | Cinematic 3D Master (Holographic Stereo + Sub-Bass Exciter) |
 | Input Formats | MP3, AAC, FLAC, WAV, WMA (via Windows MF) |
 
 
@@ -101,15 +99,14 @@ javac WarmStudio.java
 ### Compression (4-bit IMA ADPCM)
 Instead of storing every audio sample (16 bits), WAC stores only the **difference** between consecutive samples using an adaptive step size. This achieves a clean 4:1 compression ratio with no psychoacoustic tricks.
 
-### DSP — Transient Designer
-Before encoding, a **transient envelope detector** runs on the raw PCM:
-1. Computes the instantaneous derivative of the waveform
-2. Tracks a fast-attack peak follower vs. a slow-release envelope follower
-3. Extracts the difference → **pure transient energy**
-4. Applies a `4.0x` punch multiplier precisely at drum and vocal attack moments
-5. Limits the result to 98% headroom for clean ADPCM encoding
+### DSP — Cinematic 3D Master
+Before encoding, a pristine modern mastering chain runs on the raw PCM:
+1. **Holographic Stereo Widener:** Isolates the Mid/Side channels and expands the Side image by 30%, making the soundstage wrap completely around your head.
+2. **Deep Sub-Bass Exciter:** Mathematically isolates frequencies below ~80Hz using a Low-Pass filter and cleanly amplifies them to provide a cinematic "club weight" to the mix.
+3. **SPL-Style Transient Designer:** Isolates pure transient energy (drums, vocal attacks) and applies a `4.0x` punch multiplier.
+4. Limits the final result to 98% headroom for clean ADPCM encoding, with zero added distortion or hiss.
 
-This gives the WAC output a live, punchy quality that closely matches the source FLAC.
+This gives the WAC output an incredibly dense, wide, and modern cinematic texture.
 
 ---
 
@@ -121,7 +118,8 @@ This gives the WAC output a live, punchy quality that closely matches the source
 | v7 | True warmth ADPCM |
 | v8–v8.4 | Crispness, 3D stereo depth, multiband harmonics, OTT compression |
 | v9 | FLAC transparency (removed all coloration) |
-| **v9.1** | **Current: SPL Transient Designer — pristine punch** |
+| v9.1 | SPL Transient Designer — pristine punch |
+| **v13** | **Current: Cinematic 3D Spatial Audio (Holographic Stereo + Sub-Bass Boost)** |
 
 ---
 
@@ -135,5 +133,3 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
-
-

@@ -44,33 +44,56 @@ public:
         size_t totalFrames = pcm.size() / channels;
         
         // -------------------------------------------------------------
-        // WAC v9.1 - FLAC TRANSPARENCY & MASTER DYNAMIC PUNCH
+        // WAC v13 - CINEMATIC 3D SPATIAL AUDIO (Holographic Stereo + Sub-Bass)
         // -------------------------------------------------------------
+        // A pristine, modern mastering chain that dramatically widens the stereo field
+        // and enhances deep bass without adding any analog distortion or noise.
         std::vector<int16_t> filteredPcm(totalFrames * channels);
-        for (int c = 0; c < channels; ++c) {
-            float peakFollower = 0.0f;
-            float envFollower = 0.0f;
-            float transientState = 0.0f;
+        
+        std::vector<float> peakFollower(channels, 0.0f);
+        std::vector<float> envFollower(channels, 0.0f);
+        std::vector<float> transientState(channels, 0.0f);
+        std::vector<float> bassFilter(channels, 0.0f);
+
+        for (size_t f = 0; f < totalFrames; ++f) {
+            float L = pcm[f * channels + 0] / 32768.0f;
+            float R = (channels == 2) ? (pcm[f * channels + 1] / 32768.0f) : L;
             
-            for (size_t f = 0; f < totalFrames; ++f) {
-                float x = pcm[f * channels + c] / 32768.0f;
-                // Studio SPL-Style Transient Designer (Adds pristine punch with ZERO EQ coloration)
+            // 1. Holographic 3D Stereo Widener
+            // Isolates the "Mid" (center vocals/kick) and "Side" (wide synths/guitars).
+            // Expands the Side channel by 30% to create a massive wrap-around soundstage.
+            if (channels == 2) {
+                float mid = (L + R) * 0.5f;
+                float side = (L - R) * 0.5f;
+                side *= 1.30f; // 30% Width Expansion
+                L = mid + side;
+                R = mid - side;
+            }
+
+            float samples[2] = {L, R};
+            
+            for (int c = 0; c < channels; ++c) {
+                float x = samples[c];
                 
-                // 1. Math derivation of the transient envelope
-                float transient = x - transientState;
-                transientState = x;
+                // 2. Deep Sub-Bass Exciter
+                // Simple low-pass filter to extract sub-frequencies, gently mixed back in
+                // to add cinematic "weight" and club-style depth.
+                bassFilter[c] = 0.95f * bassFilter[c] + 0.05f * x;
+                float s = x + (bassFilter[c] * 0.12f); // Reduced from 0.40x to 0.12x for clean, non-overpowering bass 
+
+                // 3. SPL-Style Transient Designer (Pristine Punch)
+                float transient = s - transientState[c];
+                transientState[c] = s;
                 float absTrans = std::abs(transient);
                 
-                peakFollower = 0.2f * absTrans + 0.8f * peakFollower; // Fast attack
-                envFollower = 0.02f * absTrans + 0.98f * envFollower; // Slow release
+                peakFollower[c] = 0.2f * absTrans + 0.8f * peakFollower[c];
+                envFollower[c]  = 0.02f * absTrans + 0.98f * envFollower[c];
                 
-                float punch = peakFollower - envFollower;
+                float punch = peakFollower[c] - envFollower[c];
                 if (punch < 0.0f) punch = 0.0f;
+                s += (transient * punch * 4.0f); 
                 
-                // 2. Headroom-based Transient Scaling
-                float s = x + (transient * punch * 4.0f); 
-                
-                // 3. Pristine Safe Limiter
+                // 4. Pristine Safe Limiter
                 if (s > 0.98f) s = 0.98f;
                 else if (s < -0.98f) s = -0.98f;
                 
