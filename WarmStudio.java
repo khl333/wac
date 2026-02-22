@@ -63,6 +63,12 @@ public class WarmStudio extends JFrame {
         setLocationRelativeTo(null);
         setBackground(BG_BASE);
 
+        // Procedurally generated Red Play Button Logo to replace Java Cup
+        try {
+            setIconImage(generateLogo(64));
+        } catch (Exception e) {
+        }
+
         JPanel root = new JPanel(new BorderLayout(0, 0));
         root.setBackground(BG_BASE);
         root.add(buildTitleBar(), BorderLayout.NORTH);
@@ -85,7 +91,12 @@ public class WarmStudio extends JFrame {
         // Logo + Title
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 18, 12));
         left.setOpaque(false);
-        JLabel logo = new JLabel("◈ WAC STUDIO");
+        JLabel logo = new JLabel("WAC STUDIO");
+        try {
+            logo.setIcon(new ImageIcon(generateLogo(24)));
+            logo.setIconTextGap(10);
+        } catch (Exception e) {
+        }
         logo.setFont(new Font("Segoe UI", Font.BOLD, 17));
         logo.setForeground(ACCENT_BLUE);
         JLabel version = new JLabel("v13 • Cinematic 3D Spatial Audio");
@@ -114,6 +125,29 @@ public class WarmStudio extends JFrame {
         bar.add(left, BorderLayout.WEST);
         bar.add(right, BorderLayout.EAST);
         return bar;
+    }
+
+    // ─── Procedural Logo Generator ──────────────────────────────────────────
+    private static java.awt.image.BufferedImage generateLogo(int size) {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(size, size,
+                java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Solid red background square
+        g2.setColor(Color.RED);
+        g2.fillRect(0, 0, size, size);
+
+        // Dark red right-pointing play triangle
+        g2.setColor(new Color(139, 0, 0));
+        int padX = size / 4;
+        int padY = size / 4;
+        int[] xPoints = { padX, size - padX, padX };
+        int[] yPoints = { padY, size / 2, size - padY };
+        g2.fillPolygon(xPoints, yPoints, 3);
+
+        g2.dispose();
+        return img;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
