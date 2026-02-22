@@ -1,5 +1,7 @@
 # WAC — Warm Audio Codec
 
+<img width="300" height="150" alt="Picture2 (1) (1)" src="https://github.com/user-attachments/assets/d8f7ca50-370c-4ede-8390-a92b984d13a4" />
+
 > A fully custom, proprietary lossy audio codec built from scratch in C++ and Java.  
 > No external audio libraries. No dependencies. Pure Windows API + Java Swing.
 
@@ -133,3 +135,4 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
