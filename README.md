@@ -12,6 +12,9 @@
 
 ---
 
+<img width="2174" height="1369" alt="javaw_TBcMyHLTOn" src="https://github.com/user-attachments/assets/4b009481-248b-4d21-bd37-96d850aa78f3" />
+
+
 ## Overview
 
 **WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **SPL-Style Transient Designer** DSP for maximum punch and clarity.
@@ -131,3 +134,4 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
