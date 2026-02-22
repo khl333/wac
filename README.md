@@ -3,18 +3,17 @@
 > A fully custom, proprietary lossy audio codec built from scratch in C++ and Java.  
 > No external audio libraries. No dependencies. Pure Windows API + Java Swing.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/Platform-Windows-informational)
-![Language](https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Java-orange)
-![Version](https://img.shields.io/badge/WAC-v9.1-brightgreen)
-[![Arabic README](https://img.shields.io/badge/README-العربية-green)](README.ar.md)
-
 
 ---
 
 ## Overview
 
 **WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **SPL-Style Transient Designer** DSP for maximum punch and clarity.
+
+
+<img width="1536" height="2752" alt="unnamed (1)" src="https://github.com/user-attachments/assets/8a8d446a-5f7c-4d68-9437-efb41e63a724" />
+
+
 
 | Property | Value |
 |---|---|
@@ -133,3 +132,4 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
