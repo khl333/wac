@@ -169,6 +169,7 @@ difference :
 
 <img width="1431" height="239" alt="Spectral_Difference_Map" src="https://github.com/user-attachments/assets/0c9bd4c5-1ae5-4f81-9d54-139c23b522f6" />
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
 1. Basic Audio Integrity (TIE)
 All three codecs successfully handled the raw conversion of "07 - Coldplay - Iaam.flac" without altering the timing or amplitude container:
@@ -209,6 +210,7 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
 
 
 
