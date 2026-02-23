@@ -14,10 +14,38 @@
 ![Version](https://img.shields.io/badge/WAC-v13-brightgreen)
 [![Arabic README](https://img.shields.io/badge/README-العربية-green)](README.ar.md)
 
+**WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **Analog Studio Master DSP** for maximum punch, warmth, and clarity.
+
+
+## How It Works
+
+### Compression (4-bit IMA ADPCM)
+Instead of storing every audio sample (16 bits), WAC stores only the **difference** between consecutive samples using an adaptive step size. This achieves a clean 4:1 compression ratio with no psychoacoustic tricks.
+
+### DSP — Cinematic 3D Master
+Before encoding, a pristine modern mastering chain runs on the raw PCM:
+1. **Holographic Stereo Widener:** Isolates the Mid/Side channels and expands the Side image by 30%, making the soundstage wrap completely around your head.
+2. **Deep Sub-Bass Exciter:** Mathematically isolates frequencies below ~80Hz using a Low-Pass filter and cleanly amplifies them to provide a cinematic "club weight" to the mix.
+3. **SPL-Style Transient Designer:** Isolates pure transient energy (drums, vocal attacks) and applies a `4.0x` punch multiplier.
+4. Limits the final result to 98% headroom for clean ADPCM encoding, with zero added distortion or hiss.
+
+This gives the WAC output an incredibly dense, wide, and modern cinematic texture.
 
 ---
 
-## Overview
+## DSP Evolution
+
+| Version | Profile |
+|---|---|
+| v1–v6 | Warmth, bass shelf, tape saturation |
+| v7 | True warmth ADPCM |
+| v8–v8.4 | Crispness, 3D stereo depth, multiband harmonics, OTT compression |
+| v9 | FLAC transparency (removed all coloration) |
+| v9.1 | SPL Transient Designer — pristine punch |
+| **v13** | **Current: Cinematic 3D Spatial Audio (Holographic Stereo + Sub-Bass Boost)** |
+
+---
+---
 
 **WAC (Warm Audio Codec)** compresses MP3, AAC, FLAC, and WAV files into the `.wac` binary format using a custom **4-bit IMA ADPCM** engine with a built-in **Analog Studio Master DSP** for maximum punch, warmth, and clarity.
 
@@ -34,30 +62,7 @@
 
 ---
 
-## Application Suite
 
-### `WarmStudio.exe` — Studio GUI
-A professional dark-themed audio workstation with:
-- 48-bar animated **Spectrum Analyzer** with peak-hold dots and frequency gradients
-- Dual **VU Meters** (Left / Right channels)
-- **Media Deck** playlist with double-click playback
-- **Seek Slider** with gradient track and custom thumb
-- Real-time **Transcoding Progress** monitoring
-- Transport controls: Previous / Play / Pause / Stop / Next
-
-### `Transcoder.exe` — CLI Converter
-Converts any Windows-supported audio format to `.wac`:
-```
-Transcoder.exe <input.flac> <output.wac>
-```
-Outputs `PROGRESS: nn` lines for GUI integration.
-
-
-### `Player.exe` — Lightweight CLI Player
-Simple command-line WAC file player:
-```
-Player.exe <input.wac>
-```
 
 ---
 
@@ -99,34 +104,7 @@ javac WarmStudio.java
 
 ---
 
-## How It Works
 
-### Compression (4-bit IMA ADPCM)
-Instead of storing every audio sample (16 bits), WAC stores only the **difference** between consecutive samples using an adaptive step size. This achieves a clean 4:1 compression ratio with no psychoacoustic tricks.
-
-### DSP — Cinematic 3D Master
-Before encoding, a pristine modern mastering chain runs on the raw PCM:
-1. **Holographic Stereo Widener:** Isolates the Mid/Side channels and expands the Side image by 30%, making the soundstage wrap completely around your head.
-2. **Deep Sub-Bass Exciter:** Mathematically isolates frequencies below ~80Hz using a Low-Pass filter and cleanly amplifies them to provide a cinematic "club weight" to the mix.
-3. **SPL-Style Transient Designer:** Isolates pure transient energy (drums, vocal attacks) and applies a `4.0x` punch multiplier.
-4. Limits the final result to 98% headroom for clean ADPCM encoding, with zero added distortion or hiss.
-
-This gives the WAC output an incredibly dense, wide, and modern cinematic texture.
-
----
-
-## DSP Evolution
-
-| Version | Profile |
-|---|---|
-| v1–v6 | Warmth, bass shelf, tape saturation |
-| v7 | True warmth ADPCM |
-| v8–v8.4 | Crispness, 3D stereo depth, multiband harmonics, OTT compression |
-| v9 | FLAC transparency (removed all coloration) |
-| v9.1 | SPL Transient Designer — pristine punch |
-| **v13** | **Current: Cinematic 3D Spatial Audio (Holographic Stereo + Sub-Bass Boost)** |
-
----
 
 Source Flac  : 
 
@@ -216,6 +194,7 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
 
 
 
