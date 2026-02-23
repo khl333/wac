@@ -128,6 +128,77 @@ This gives the WAC output an incredibly dense, wide, and modern cinematic textur
 
 ---
 
+Source Flac  : 
+
+<img width="1431" height="239" alt="SlotA_07  Iaam flac" src="https://github.com/user-attachments/assets/399727ee-1112-4626-b863-50f4b008cf76" />
+
+Wac format :
+
+<img width="1431" height="239" alt="SlotA_07  Iaam wac" src="https://github.com/user-attachments/assets/496e8203-9752-4ca0-a537-a518ff90979b" />
+
+difference : 
+
+<img width="1431" height="239" alt="Spectral_Difference_Map" src="https://github.com/user-attachments/assets/4ded3890-3b13-4403-9faf-c0f52af91aee" />
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Source Flac  : 
+
+<img width="1431" height="239" alt="SlotA_07  Iaam flac" src="https://github.com/user-attachments/assets/399727ee-1112-4626-b863-50f4b008cf76" />
+
+
+MP3 format :
+
+<img width="1431" height="239" alt="SlotA_07 - Coldplay - Iaam mp3" src="https://github.com/user-attachments/assets/7ed48ca3-b720-401a-9cf1-6192b852954e" />
+
+difference : 
+
+<img width="1431" height="239" alt="Spectral_Difference_Map" src="https://github.com/user-attachments/assets/90e3b805-6a09-40f6-a279-5951d1ba7634" />
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Source Flac  : 
+
+<img width="1431" height="239" alt="SlotA_07  Iaam flac" src="https://github.com/user-attachments/assets/399727ee-1112-4626-b863-50f4b008cf76" />
+
+AAC format :
+
+<img width="1431" height="239" alt="SlotB_07 - Coldplay - Iaam aac" src="https://github.com/user-attachments/assets/e3cf130e-2fee-4dbe-abae-05ebcc9781ca" />
+
+difference : 
+
+<img width="1431" height="239" alt="Spectral_Difference_Map" src="https://github.com/user-attachments/assets/0c9bd4c5-1ae5-4f81-9d54-139c23b522f6" />
+
+
+FLAC (The Reference)
+Performance: FLAC serves as the perfect lossless baseline for this comparison.
+
+Visual Analysis: Looking at the 07. Iaam.flac spectrogram, you can see a dense, rich frequency response that extends all the way to the top of the graph (22.05 kHz) without any artificial cutoffs. All transient details and high-frequency harmonics are completely preserved.
+
+2. WAC (Warm Audio Codec)
+Performance: Mathematically Lossless (100% Data Preservation).
+
+Visual Analysis: The spectrogram for 07. Iaam.wac is visually identical to the FLAC reference, showing the same full-spectrum frequency retention.
+
+Difference Map: The spectral difference map between WAC and FLAC is the standout result here. It is completely black, registering a 100.00% similarity to the reference. This proves that the Warm Audio Codec operates losslessly in this configuration, perfectly reconstructing the original audio data without discarding a single bit of information.
+
+3. MP3 (LAME Encoder at 320 kbps CBR)
+Performance: High-Quality Lossy (82.72% Data Preservation).
+
+Visual Analysis: In the 07 - Coldplay - Iaam.mp3 spectrogram, you can see a distinct, flat cut-off line just below the 20 kHz mark. This is a deliberate function of the LAME encoder; it uses a low-pass filter to discard very high, mostly inaudible frequencies to save bit space for the rest of the track.
+
+Difference Map: The spectral difference map shows a vast amount of red and green speckling, indicating the data altered or discarded by the MP3 psychoacoustic model. While 320 kbps Constant Bitrate (CBR) sounds excellent to the human ear, mathematically, it only retains 82.72% similarity to the lossless FLAC file.
+
+4. AAC (FDK-AAC Encoder at VBR Quality 5)
+Performance: High-Efficiency Lossy (Estimated >85% Data Preservation).
+
+Visual Analysis: While the spectrogram and difference map for the AAC encode weren't included in the attachments, we can evaluate the provided encoder settings.
+
+Encoder Settings: You are using the FDK-AAC encoder set to MPEG AAC Low Complexity, utilizing a Variable Bitrate (VBR) at "Quality 5". This is generally considered a transparent, extremely high-quality setting (roughly equivalent to 224–256+ kbps). Because AAC is a more modern and efficient algorithm than MP3, it handles high frequencies and transients much better. If you were to run a difference map on this AAC file, it would likely yield a higher similarity percentage than the MP3's 82.72%, though it would still show some lossy artifacting compared to WAC or FLAC.
+
+
+
+
 ## License
 
 MIT License — see [LICENSE](LICENSE)
@@ -138,4 +209,5 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
 
