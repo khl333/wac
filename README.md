@@ -193,7 +193,7 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 
 ---
 
-*Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
 
 
 
