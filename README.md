@@ -1,3 +1,7 @@
+
+<img width="300" height="150" alt="LogoGUI" src="https://github.com/user-attachments/assets/318e175c-2f6e-4906-b9f1-cdfa89e96f3c" />
+
+
 # WAC — Warm Audio Codec
 
 > A fully custom, proprietary lossy audio codec built from scratch in C++ and Java.  
@@ -28,17 +32,6 @@
 
 
 ---
-
-## Application Suite
-
-### `WarmStudio.exe` — Studio GUI
-A professional dark-themed audio workstation with:
-- 48-bar animated **Spectrum Analyzer** with peak-hold dots and frequency gradients
-- Dual **VU Meters** (Left / Right channels)
-- **Media Deck** playlist with double-click playback
-- **Seek Slider** with gradient track and custom thumb
-- Real-time **Transcoding Progress** monitoring
-- Transport controls: Previous / Play / Pause / Stop / Next
 
 ### `WacAnalyzer.exe` — Acoustic Spectrum Analyzer
 A dedicated professional acoustic analysis GUI:
@@ -141,3 +134,4 @@ The IMA ADPCM step table constants (`STEP_TABLE[89]`) are derived from the publi
 ---
 
 *Built with 100% original code. No FFmpeg. No libsndfile. No external audio libraries.*
+
