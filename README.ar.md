@@ -37,6 +37,13 @@
 - متابعة **تقدم عملية التحويل** بشكل لحظي
 - أزرار التشغيل: السابق / تشغيل / إيقاف مؤقت / إيقاف / التالي
 
+### `WacAnalyzer.exe` — محلل الطيف الصوتي (Acoustic Spectrum Analyzer)
+أداة واجهة رسومية مخصصة للتحليل الصوتي الاحترافي:
+- دعم السحب والإفلات لملفات `.wac`, `.mp3`, `.flac`, `.wav`
+- **الموجة الصوتية الزمنية:** رسم موجة PCM كاملة للمقطع الصوتي بدقة 16-بت.
+- **التردد الطيفي FFT:** يقوم بحساب تحويل فورييه السريع (Cooley-Tukey Radix-2 FFT) في الوقت الفعلي لعرض طيف الترددات بدقة عالية.
+- تحويل تلقائي بالخلفية لأي مسار صوتي من غير صيغة WAC لتحليله مباشرة.
+
 ### `Transcoder.exe` — المحوّل من سطر الأوامر
 يحوّل أي صيغة صوتية مدعومة في Windows إلى `.wac`:
 ```
@@ -59,10 +66,12 @@ Player.exe <ملف.wac>
 InternetRadio/
 ├── WarmCodec.h              # محرك الكودك الأساسي (ترميز + فك ترميز + DSP)
 ├── Transcoder.cpp           # المحوّل (Windows Media Foundation)
-├── Player.cpp               # المشغّل (Windows waveOut API)
-├── Launcher.cpp             # مشغّل EXE الأصلي لواجهة Java
-├── WarmStudio.java          # واجهة الاستوديو (Java Swing)
-├── build.bat                # سكريبت البناء (g++ + javac)
+├── Player.cpp               # المشغل من سطر الأوامر (واجهة Windows waveOut)
+├── Launcher.cpp             # مطلق تطبيق واجهة استوديو Java
+├── WarmStudio.java          # تطبيق استوديو Java Swing الاحترافي
+├── AnalyzerLauncher.cpp     # مطلق تطبيق واجهة محلل الطيف
+├── WacAnalyzer.java         # تطبيق واجهة تحليل الطيف و FFT
+├── build.bat                # سكربت البناء (g++ + javac)
 ├── WAC_CODEC_WHITEPAPER.md  # الوثيقة التقنية الكاملة
 ├── LICENSE                  # رخصة MIT
 └── .gitignore

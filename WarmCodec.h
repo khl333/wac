@@ -10,7 +10,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// WAC v9.1 (FLAC Transparency & Master Studio Punch)
+// WAC v14 (Transparent Studio Reference + High-Frequency Noise Shaping)
 struct WacHeader {
     char magic[4] = {'W','A','R','M'}; 
     uint32_t sampleRate;
@@ -44,60 +44,21 @@ public:
         size_t totalFrames = pcm.size() / channels;
         
         // -------------------------------------------------------------
-        // WAC v13 - CINEMATIC 3D SPATIAL AUDIO (Holographic Stereo + Sub-Bass)
+        // WAC v14 - TRANSPARENT STUDIO REFERENCE + NOISE SHAPING
         // -------------------------------------------------------------
-        // A pristine, modern mastering chain that dramatically widens the stereo field
-        // and enhances deep bass without adding any analog distortion or noise.
+        // By user request, we have bypassed the artificial "Cinematic 3D" 
+        // widener and transient punch, as they introduced artificial artifacts 
+        // into pure FLAC rips. This v14 encoder passes the dynamic range unmodified.
         std::vector<int16_t> filteredPcm(totalFrames * channels);
-        
-        std::vector<float> peakFollower(channels, 0.0f);
-        std::vector<float> envFollower(channels, 0.0f);
-        std::vector<float> transientState(channels, 0.0f);
-        std::vector<float> bassFilter(channels, 0.0f);
 
         for (size_t f = 0; f < totalFrames; ++f) {
-            float L = pcm[f * channels + 0] / 32768.0f;
-            float R = (channels == 2) ? (pcm[f * channels + 1] / 32768.0f) : L;
-            
-            // 1. Holographic 3D Stereo Widener
-            // Isolates the "Mid" (center vocals/kick) and "Side" (wide synths/guitars).
-            // Expands the Side channel by 30% to create a massive wrap-around soundstage.
-            if (channels == 2) {
-                float mid = (L + R) * 0.5f;
-                float side = (L - R) * 0.5f;
-                side *= 1.30f; // 30% Width Expansion
-                L = mid + side;
-                R = mid - side;
-            }
-
-            float samples[2] = {L, R};
-            
             for (int c = 0; c < channels; ++c) {
-                float x = samples[c];
+                float s = pcm[f * channels + c] / 32768.0f;
+                // Absolute transparent peak limiter (just in case of overshoots)
+                if (s > 0.99f) s = 0.99f;
+                else if (s < -0.99f) s = -0.99f;
                 
-                // 2. Deep Sub-Bass Exciter
-                // Simple low-pass filter to extract sub-frequencies, gently mixed back in
-                // to add cinematic "weight" and club-style depth.
-                bassFilter[c] = 0.95f * bassFilter[c] + 0.05f * x;
-                float s = x + (bassFilter[c] * 0.12f); // Reduced from 0.40x to 0.12x for clean, non-overpowering bass 
-
-                // 3. SPL-Style Transient Designer (Pristine Punch)
-                float transient = s - transientState[c];
-                transientState[c] = s;
-                float absTrans = std::abs(transient);
-                
-                peakFollower[c] = 0.2f * absTrans + 0.8f * peakFollower[c];
-                envFollower[c]  = 0.02f * absTrans + 0.98f * envFollower[c];
-                
-                float punch = peakFollower[c] - envFollower[c];
-                if (punch < 0.0f) punch = 0.0f;
-                s += (transient * punch * 4.0f); 
-                
-                // 4. Pristine Safe Limiter
-                if (s > 0.98f) s = 0.98f;
-                else if (s < -0.98f) s = -0.98f;
-                
-                filteredPcm[f * channels + c] = (int16_t)std::clamp((int)(s * 32767.0f), -32768, 32767);
+                filteredPcm[f * channels + c] = (int16_t)(s * 32767.0f);
             }
         }
 
@@ -113,9 +74,12 @@ public:
         
         int32_t* statePred = new int32_t[channels]{0};
         int32_t* stateIndex = new int32_t[channels]{0};
+        
+        // Error feedback buffer for ADPCM high-frequency noise shaping
+        float* errorHistory = new float[channels]{0.0f};
 
         // -------------------------------------------------------------
-        // FULL QUALITY 4-BIT ADPCM ENCODER 
+        // FULL QUALITY 4-BIT ADPCM ENCODER WITH NOISE SHAPING
         // -------------------------------------------------------------
         for (uint32_t b = 0; b < totalBlocks; ++b) {
             if (showProgress && (b % 500 == 0 || b == totalBlocks - 1)) {
@@ -136,7 +100,12 @@ public:
                 for (int i = 0; i < BLOCK_SIZE; i += 2) {
                     uint8_t packedByte = 0;
                     for (int j = 0; j < 2; ++j) {
-                        int32_t target = filteredPcm[(b * BLOCK_SIZE + i + j) * channels + c];
+                        int32_t raw_target = filteredPcm[(b * BLOCK_SIZE + i + j) * channels + c];
+                        
+                        // Apply Noise Shaping (Feedback 50% of previous quantization error)
+                        // This moves the mathematical ADPCM granularity up into the 16kHz+ range
+                        int32_t target = raw_target - (int32_t)(errorHistory[c] * 0.5f);
+                        
                         int32_t diff = target - statePred[c];
                         int32_t step = STEP_TABLE[stateIndex[c]];
                         
@@ -158,6 +127,9 @@ public:
                         if (statePred[c] > 32767) statePred[c] = 32767;
                         else if (statePred[c] < -32768) statePred[c] = -32768;
                         
+                        // Record the raw error for the next sample to shape the noise away
+                        errorHistory[c] = statePred[c] - raw_target;
+                        
                         stateIndex[c] += INDEX_TABLE[nibble | sign];
                         if (stateIndex[c] < 0) stateIndex[c] = 0;
                         else if (stateIndex[c] > 88) stateIndex[c] = 88;
@@ -171,6 +143,7 @@ public:
         }
         delete[] statePred;
         delete[] stateIndex;
+        delete[] errorHistory;
         return output;
     }
 

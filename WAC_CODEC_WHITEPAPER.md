@@ -1,6 +1,6 @@
 # WAC (Warm Audio Codec) — Full Technical Whitepaper
-### Version 13 | February 2026
-### Author: Khaled | Developed with Antigravity AI
+### Version 14 | February 2026
+### Author: Khaled
 
 ---
 
@@ -48,7 +48,7 @@ The project was started with a clear set of design objectives:
 | **Predictable Compression** | Achieve a fixed ~4:1 compression ratio (compared to raw PCM) |
 | **Fixed Bitrate** | Target a constant ~375 kbps at 44.1 kHz stereo |
 | **FLAC Transparency** | Sound as close as possible to lossless FLAC during playback |
-| **Cinematic 3D** | Expand the stereo field and heavily enhance sub-bass while retaining transient punch |
+| **Cinematic 3D** | Now Optional/Bypassed in v14 in favor of absolute signal transparency |
 | **Professional GUI** | Build a DAW-style application for transcoding and playback |
 
 ---
